@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">memomate</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="login_header">Welcome to Memomate!</string>
+    <string name="register">Register</string>
+    <string name="register_header">Create an account</string>
+    <string name="click_to_login">Click to login</string>
+    <string name="click_to_register">Click to register</string>
+    <string name="user_details">User Details</string>
+    <string name="logout">Logout</string>
+    <string name="title_activity_my_notes">MyNotes</string>
+    <string name="title">Title</string>
 </resources>
