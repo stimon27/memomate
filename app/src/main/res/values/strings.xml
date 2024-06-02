@@ -12,4 +12,6 @@
     <string name="logout">Logout</string>
     <string name="title_activity_my_notes">MyNotes</string>
     <string name="title">Title</string>
+    <string name="my_notes">My notes</string>
+    <string name="cross_emoji">❌</string>
 </resources>

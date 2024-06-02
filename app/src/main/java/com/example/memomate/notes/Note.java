@@ -2,21 +2,37 @@ package com.example.memomate.notes;
 
 import android.os.Build;
 
-import java.time.LocalDateTime;
+import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.PropertyName;
+
+import java.time.Instant;
+import java.util.Date;
 
 public class Note {
     private String title;
     private String content;
-    private LocalDateTime createdDate;
+    private Date createdDate;
     private String createdBy;
+    private String id;
 
-    public Note(String title, String content, LocalDateTime createdDate, String createdBy) {
+    public Note() {
+    }
+
+    public Note(String title, String content, String createdBy) {
         this.title = title;
         this.content = content;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            this.createdDate = LocalDateTime.now();
+            this.createdDate = Date.from(Instant.now());
         }
         this.createdBy = createdBy;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getTitle() {
@@ -35,12 +51,14 @@ public class Note {
         this.content = content;
     }
 
-    public LocalDateTime getCreatedDate() {
+    @PropertyName("createdDate")
+    public Date getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(LocalDateTime createdDate) {
-        this.createdDate = createdDate;
+    @PropertyName("createdDate")
+    public void setCreatedDate(Timestamp createdDate) {
+        this.createdDate = createdDate.toDate();
     }
 
     public String getCreatedBy() {
