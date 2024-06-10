@@ -1,4 +1,4 @@
-package com.example.memomate.notes;
+package com.example.memomate.share;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 
@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -21,7 +20,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.memomate.R;
 import com.example.memomate.auth.Login;
-import com.example.memomate.share.SharedNotesList;
+import com.example.memomate.notes.Note;
+import com.example.memomate.notes.NotesAdapter;
+import com.example.memomate.notes.NotesList;
+import com.example.memomate.notes.OnItemClickListener;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
@@ -32,45 +34,54 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NotesList extends AppCompatActivity implements OnItemClickListener {
+public class SharedNotesList extends AppCompatActivity implements OnItemClickListener {
 
     private FirebaseFirestore db;
     private final List<Note> notes = new ArrayList<>();
     private NotesAdapter adapter;
-    private String userEmail;
+    private String sharingEmail;
+    private String sharingKey;
 
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_notes_list);
+        setContentView(R.layout.activity_shared_notes_list);
 
-        Toolbar myToolbar = findViewById(R.id.notesListToolbar);
+        Toolbar myToolbar = findViewById(R.id.sharedNotesListToolbar);
         myToolbar.getOverflowIcon().setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_ATOP);
         setSupportActionBar(myToolbar);
 
-        FirebaseAuth mAuth = FirebaseAuth.getInstance();
-        userEmail = mAuth.getCurrentUser().getEmail();
-
         db = FirebaseFirestore.getInstance();
+
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new NotesAdapter(notes, this);
         recyclerView.setAdapter(adapter);
-        getNotes();
 
-        Button createNoteButton = findViewById(R.id.createNoteButton);
-        createNoteButton.setOnClickListener(v -> {
-            Intent newIntent = new Intent(this, NoteDetails.class);
-            newIntent.putExtra("mode", NoteMode.CREATE);
-            startActivity(newIntent);
-            finish();
-        });
+        Intent intent = getIntent();
+        boolean dataChanged = false;
+        if (intent.getStringExtra("sharingEmail") != null) {
+            sharingEmail = intent.getStringExtra("sharingEmail");
+            dataChanged = true;
+        }
+        if (intent.getStringExtra("sharingKey") != null) {
+            sharingKey = intent.getStringExtra("sharingKey");
+            dataChanged = true;
+        }
+        if (dataChanged) {
+            notes.clear();
+            getNotes();
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private void getNotes() {
+
         db.collection("notes")
-                .whereEqualTo("createdBy", userEmail)
+                .whereEqualTo("createdBy", sharingEmail)
+                .whereEqualTo("sharingKey", sharingKey)
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @SuppressLint("NotifyDataSetChanged")
@@ -92,30 +103,36 @@ public class NotesList extends AppCompatActivity implements OnItemClickListener 
 
     @Override
     public void onItemClick(int position) {
-        Intent intent = new Intent(this, NoteDetails.class);
+        Intent intent = new Intent(this, SharedNoteDetails.class);
         intent.putExtra("noteId", notes.get(position).getId());
-        intent.putExtra("mode", NoteMode.EDIT);
+        intent.putExtra("sharingEmail", sharingEmail);
+        intent.putExtra("sharingKey", sharingKey);
         startActivity(intent);
         finish();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add("Create note");
-        menu.add("Shared with me");
+        menu.add("My notes");
+        menu.add("Change sharing query");
         menu.add("Logout");
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getTitle().equals("Create note")) {
-            Intent intent = new Intent(this, NoteDetails.class);
-            intent.putExtra("mode", NoteMode.CREATE);
+        if (item.getTitle().equals("My notes")) {
+            Intent intent = new Intent(this, NotesList.class);
             startActivity(intent);
             finish();
-        } else if (item.getTitle().equals("Shared with me")) {
-            Intent intent = new Intent(this, SharedNotesList.class);
+        } else if (item.getTitle().equals("Change sharing query")) {
+            Intent intent = new Intent(this, SharingQuery.class);
+            if (sharingEmail != null && !sharingEmail.isEmpty()) {
+                intent.putExtra("sharingEmail", sharingEmail);
+            }
+            if (sharingKey != null && !sharingKey.isEmpty()) {
+                intent.putExtra("sharingKey", sharingKey);
+            }
             startActivity(intent);
             finish();
         } else if (item.getTitle().equals("Logout")) {

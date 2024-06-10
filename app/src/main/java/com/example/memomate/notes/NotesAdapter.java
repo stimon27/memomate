@@ -1,11 +1,8 @@
 package com.example.memomate.notes;
 
 
-import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,9 +22,12 @@ import java.util.List;
 public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHolder> {
 
     private List<Note> notesList;
+    private final OnItemClickListener listener;
 
-    public NotesAdapter(List<Note> notesList) {
+    public NotesAdapter(List<Note> notesList, OnItemClickListener listener) {
+
         this.notesList = notesList;
+        this.listener =  listener;
     }
 
     @NonNull
@@ -35,7 +35,7 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
     public NoteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.fragment_note_item, parent, false);
-        return new NoteViewHolder(itemView);
+        return new NoteViewHolder(itemView, listener);
     }
 
     @Override
@@ -60,12 +60,21 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
         public TextView dateTextView;
         public Button deleteButton;
 
-        public NoteViewHolder(View view) {
+        public NoteViewHolder(View view, final OnItemClickListener listener) {
             super(view);
             titleTextView = view.findViewById(R.id.noteTitle);
             contentTextView = view.findViewById(R.id.noteContent);
             dateTextView = view.findViewById(R.id.noteDate);
             deleteButton = view.findViewById(R.id.deleteButton);
+
+            itemView.setOnClickListener(v -> {
+                if (listener != null) {
+                    int position = getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        listener.onItemClick(position);
+                    }
+                }
+            });
         }
     }
 
@@ -84,9 +93,6 @@ public class NotesAdapter extends RecyclerView.Adapter<NotesAdapter.NoteViewHold
                         notifyItemRemoved(position);
                         notifyItemRangeChanged(position, notesList.size());
                 })
-                .addOnFailureListener(e -> {
-                    Log.w(TAG, "Error deleting document", e);
-                    Toast.makeText(context, "Error deleting note", Toast.LENGTH_SHORT).show();
-                });
+                .addOnFailureListener(e -> Toast.makeText(context, "Error deleting note", Toast.LENGTH_SHORT).show());
     }
 }

@@ -14,17 +14,19 @@ public class Note {
     private Date createdDate;
     private String createdBy;
     private String id;
+    private String sharingKey;
 
     public Note() {
     }
 
-    public Note(String title, String content, String createdBy) {
+    public Note(String title, String content, String createdBy, String sharingKey) {
         this.title = title;
         this.content = content;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             this.createdDate = Date.from(Instant.now());
         }
         this.createdBy = createdBy;
+        this.sharingKey = sharingKey;
     }
 
     public String getId() {
@@ -69,6 +71,14 @@ public class Note {
         this.createdBy = createdBy;
     }
 
+    public String getSharingKey() {
+        return sharingKey;
+    }
+
+    public void setSharingKey(String sharingKey) {
+        this.sharingKey = sharingKey;
+    }
+
     @Override
     public String toString() {
         return "Note{" +
@@ -76,6 +86,7 @@ public class Note {
                 ", content='" + content + '\'' +
                 ", createdDate=" + createdDate +
                 ", createdBy='" + createdBy + '\'' +
+                ", sharingKey='" + sharingKey + '\'' +
                 '}';
     }
 }
